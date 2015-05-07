@@ -4,8 +4,24 @@
 #
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
+from project1.items import Project1Item
+from scrapy.contrib.pipeline.files import FilesPipeline
+import scrapy
 
+class coeFilesPipeline(FilesPipeline):
 
-class Project1Pipeline(object):
-    def process_item(self, item, spider):
-        return item
+    def get_media_requests(self, item, info):
+        yield scrapy.http.Request(url=item["file_urls"]["file_url"], meta={"file_specs": item['file_urls']})
+
+    def file_path(self, request, response=None, info=None):
+        return request.meta["file_specs"]["file_name"]
+
+# class Project1Pipeline(Fil):
+#     def process_item(self, item, spider):
+#         request = scrapy.Request(item['url'],callback=downloadFile)
+#         yield request
+
+#     def downloadFile(self,response):
+#         f = os.open('pepitofile','w')
+#         f.write(response.body)
+#         f.close()

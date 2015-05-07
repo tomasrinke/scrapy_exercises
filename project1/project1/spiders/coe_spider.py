@@ -6,9 +6,12 @@ base_coe_url = "https://wcd.coe.int"
 class CoeSpider(scrapy.Spider):
     name = "coe"
     allowed_domains = ["coe.int"]
-    # Pagination = 999999 (all results in one page)
-    start_urls = ["https://wcd.coe.int/search.jsp?&Pagination=999999&ShowBanner=no&ShowNavBar=both&Site=CM%20&BackColorIntranet=EDB021&BackColorInternet=C3C3C3&BackColorLogged=F5D383&ShowRes=yes&DocType=docDecision&FilingPlan=fplCM_VolDecisions&Language=lanEnglish&Sector=secCM&ShowCrit=top&ShowPeriodBox=dates&ShowPaginationBox=no&ShowFullTextSearch=yes&ShowDocTypeBox=no&ShowEntityBox=no&ShowEventBox=no&ShowGeoBox=no&ShowLanguageBox=no%20&ShowThemeBox=no&ShowSectorBox=no&ShowSectorLevelBox=no&ShowFileRefBox=no&ShowKeywordBox=no&ResultTitle=Compilation%20of%20decisions%20by%20meeting&CritTitle=Compilation%20of%20decisions%20by%20meeting&Lang=en"]
 
+    def start_requests(self):
+        # Pagination = 999999 (all results in one page)
+        # BeginDate, EndDate filter results by date.
+        return [scrapy.FormRequest("https://wcd.coe.int/search.jsp?&Pagination=999999&ShowBanner=no&ShowNavBar=both&Site=CM%20&BackColorIntranet=EDB021&BackColorInternet=C3C3C3&BackColorLogged=F5D383&ShowRes=yes&DocType=docDecision&FilingPlan=fplCM_VolDecisions&Language=lanEnglish&Sector=secCM&ShowCrit=top&ShowPeriodBox=dates&ShowPaginationBox=no&ShowFullTextSearch=yes&ShowDocTypeBox=no&ShowEntityBox=no&ShowEventBox=no&ShowGeoBox=no&ShowLanguageBox=no%20&ShowThemeBox=no&ShowSectorBox=no&ShowSectorLevelBox=no&ShowFileRefBox=no&ShowKeywordBox=no&ResultTitle=Compilation%20of%20decisions%20by%20meeting&CritTitle=Compilation%20of%20decisions%20by%20meeting&Lang=en",
+                                     formdata={'BeginDate':'1980','EndDate':'2015'})]
     def parse(self,response):
         result = []
         if 'Compilation of decisions by meeting' in response.body:
@@ -34,7 +37,8 @@ class CoeSpider(scrapy.Spider):
                 print '\n\n\n\n\n' + response.url + '\n\n\n\n\n'
             try: 
                 item = Project1Item()
-                item['file'] = url
+                filename = response.xpath('//title/text()').extract()[0]
+                item['file_urls'] = {'file_url':url,'file_name': filename}
                 result.append(item)
             except:
                 pass

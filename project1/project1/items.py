@@ -9,4 +9,5 @@ import scrapy
 
 
 class Project1Item(scrapy.Item):
-    file = scrapy.Field()
+    file_urls = scrapy.Field()
+    files = scrapy.Field()
