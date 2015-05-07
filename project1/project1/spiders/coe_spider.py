@@ -30,7 +30,7 @@ class CoeSpider(scrapy.Spider):
                 print '\n\n\n\n\n' + response.url + '\n\n\n\n\n'
             try: 
                 item = Project1Item()
-                filename = response.xpath('//title/text()').extract()[0]
+                filename = response.xpath('//p[@class="CM_Title"]/b/text()').extract()[0]
                 item['file_urls'] = {'file_url':url,'file_name': filename}
                 result.append(item)
             except:
