@@ -11,19 +11,12 @@ class CoeSpider(scrapy.Spider):
         # Pagination = 999999 (all results in one page)
         # BeginDate, EndDate filter results by date.
         return [scrapy.FormRequest("https://wcd.coe.int/search.jsp?&Pagination=999999&ShowBanner=no&ShowNavBar=both&Site=CM%20&BackColorIntranet=EDB021&BackColorInternet=C3C3C3&BackColorLogged=F5D383&ShowRes=yes&DocType=docDecision&FilingPlan=fplCM_VolDecisions&Language=lanEnglish&Sector=secCM&ShowCrit=top&ShowPeriodBox=dates&ShowPaginationBox=no&ShowFullTextSearch=yes&ShowDocTypeBox=no&ShowEntityBox=no&ShowEventBox=no&ShowGeoBox=no&ShowLanguageBox=no%20&ShowThemeBox=no&ShowSectorBox=no&ShowSectorLevelBox=no&ShowFileRefBox=no&ShowKeywordBox=no&ResultTitle=Compilation%20of%20decisions%20by%20meeting&CritTitle=Compilation%20of%20decisions%20by%20meeting&Lang=en",
-                                     formdata={'BeginDate':'1980','EndDate':'2015'})]
-    def parse(self,response):
-        result = []
-        if 'Compilation of decisions by meeting' in response.body:
-            result.extend(self.parse_main_page(response))
-        else:
-            result.extend(self.parse_document_page(response))
-        return result
-
+                                     formdata={'BeginDate':'1980','EndDate':'2015'},
+                                     callback=self.parse_main_page)]
     def parse_main_page(self,response):
             result = []
             for data in response.xpath("//*[@class='paddingLR25px']/a/@href").extract():
-                result.append(scrapy.Request(base_coe_url + data))
+                result.append(scrapy.Request(base_coe_url + data,callback=self.parse_document_page))
             return result
 
     def parse_document_page(self,response):
