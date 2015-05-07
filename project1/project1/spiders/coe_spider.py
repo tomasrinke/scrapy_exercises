@@ -1,11 +1,11 @@
 import scrapy
 from project1.items import Project1Item
 
-base_coe_url = "https://wcd.coe.int"
 
 class CoeSpider(scrapy.Spider):
     name = "coe"
     allowed_domains = ["coe.int"]
+    base_url = "https://wcd.coe.int"
 
     def start_requests(self):
         # Pagination = 999999 (all results in one page)
@@ -16,21 +16,22 @@ class CoeSpider(scrapy.Spider):
     def parse_main_page(self,response):
             result = []
             for data in response.xpath("//*[@class='paddingLR25px']/a/@href").extract():
-                result.append(scrapy.Request(base_coe_url + data,callback=self.parse_document_page))
+                result.append(scrapy.Request(self.base_url + data,callback=self.parse_document_page))
             return result
 
     def parse_document_page(self,response):
             result = []
             if 'Open Word version' in response.body:
-                url = base_coe_url + response.xpath("//a[contains(@title,'Open Word version')]/@href")[0].extract()
+                url = self.base_url + response.xpath("//a[contains(@title,'Open Word version')]/@href")[0].extract()
             elif 'Open PDF version' in response.body:
-                url = base_coe_url + response.xpath("//a[contains(@title,'Open PDF version')]/@href")[0].extract()
+                url = self.base_url + response.xpath("//a[contains(@title,'Open PDF version')]/@href")[0].extract()
             else:
                 # Hay documentos que no tienen link ni de word ni de pdf
                 print '\n\n\n\n\n' + response.url + '\n\n\n\n\n'
             try: 
                 item = Project1Item()
-                filename = response.xpath('//p[@class="CM_Title"]/b/text()').extract()[0]
+                # filename sin slash, y a lo sumo 255 caracteres
+                filename = response.xpath('//p[@class="CM_Title"]/b/text()').extract()[0].replace('/','\\')[:255]
                 item['file_urls'] = {'file_url':url,'file_name': filename}
                 result.append(item)
             except:
